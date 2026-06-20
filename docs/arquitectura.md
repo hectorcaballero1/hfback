@@ -23,12 +23,18 @@
                     ┌────┴────┐
                     │   S3    │  ← Frontend sube JSON con presigned URL
                     └────┬────┘
-                         │ s3:ObjectCreated
-                         ▼
-                  ┌─────────────┐
-                  │ fanout.py   │  Lee JSON, emite 1 evento por consulta
-                  │  (Lambda)   │
-                  └──────┬──────┘
+                         │ s3:ObjectCreated (filtrado por prefijo)
+              ┌──────────┴──────────┐
+       consultas/                corpus/
+              │                      │
+              ▼                      ▼
+       ┌─────────────┐       ┌──────────────┐
+       │ fanout.py   │       │ ragingest.py │  Reenvía cada doc al RAG
+       │  (Lambda)   │       │  (Lambda)    │  POST /documentos
+       └──────┬──────┘       └──────┬───────┘
+              │                     │ (ingesta corpus en caliente)
+              │                     ▼  EC2 RAG: chunk + embed + upsert Qdrant
+              │  Lee JSON, emite 1 evento por consulta
                          │ put_events
                          ▼
                   ┌──────────────┐

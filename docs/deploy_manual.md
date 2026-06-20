@@ -51,9 +51,11 @@ aws_session_token=...
 
 Copiar los valores desde **AWS Details → Cloud Access → AWS CLI** en el Learner Lab.
 
-Luego configurar el `.env`:
+Luego configurar el `.env` (vive en `backend/`, junto al `serverless.yml`, así
+`serverless` lo lee solo — no hay que copiarlo a ningún lado):
 
 ```bash
+cd backend
 cp .env.example .env
 ```
 

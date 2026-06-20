@@ -29,6 +29,10 @@ functions:
     environment:
       EVENT_BUS_NAME: { Ref: TriageBus }
 
+  ragIngest:
+    handler: handlers/ragingest.handler
+    timeout: 60
+
   worker:
     handler: handlers/worker.handler
     reservedConcurrency: 1
@@ -94,9 +98,19 @@ resources:
         Principal: s3.amazonaws.com
         SourceArn: { Fn::Sub: "arn:aws:s3:::hack-utec-uploads-${sls:stage}-${env:ACCOUNT_ID}" }
 
+    RagIngestS3Permission:
+      Type: AWS::Lambda::Permission
+      Properties:
+        FunctionName: { Fn::GetAtt: [RagIngestLambdaFunction, Arn] }
+        Action: lambda:InvokeFunction
+        Principal: s3.amazonaws.com
+        SourceArn: { Fn::Sub: "arn:aws:s3:::hack-utec-uploads-${sls:stage}-${env:ACCOUNT_ID}" }
+
     UploadsBucket:
       Type: AWS::S3::Bucket
-      DependsOn: FanOutS3Permission
+      DependsOn:
+        - FanOutS3Permission
+        - RagIngestS3Permission
       Properties:
         BucketName: hack-utec-uploads-${sls:stage}-${env:ACCOUNT_ID}
         CorsConfiguration:
@@ -106,8 +120,22 @@ resources:
               AllowedHeaders: ['*']
         NotificationConfiguration:
           LambdaConfigurations:
+            # Consultas (triage) -> prefijo consultas/
             - Event: s3:ObjectCreated:*
               Function: { Fn::GetAtt: [FanOutLambdaFunction, Arn] }
+              Filter:
+                S3Key:
+                  Rules:
+                    - Name: prefix
+                      Value: consultas/
+            # Corpus del RAG -> prefijo corpus/
+            - Event: s3:ObjectCreated:*
+              Function: { Fn::GetAtt: [RagIngestLambdaFunction, Arn] }
+              Filter:
+                S3Key:
+                  Rules:
+                    - Name: prefix
+                      Value: corpus/
 
     TriageBus:
       Type: AWS::Events::EventBus

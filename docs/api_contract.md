@@ -41,16 +41,23 @@ Genera una URL prefirmada de S3 para que el frontend suba el JSON directamente.
 
 **Body:**
 ```json
-{ "tenantId": "utec" }
+{ "tenantId": "utec", "tipo": "consultas" }
 ```
+- `tipo` (opcional, default `consultas`): `consultas` para el flujo de triage,
+  `documentos` para subir corpus al RAG. Decide el prefijo del objeto en S3 y, por
+  ende, qué Lambda lo procesa.
 
 **Response 200:**
 ```json
 {
-  "uploadUrl": "https://s3.amazonaws.com/hack-utec-uploads-dev-XXXX/utec/2026-06-20/abc.json?X-Amz-...",
-  "key": "utec/2026-06-20/abc123.json"
+  "uploadUrl": "https://s3.amazonaws.com/hack-utec-uploads-dev-XXXX/consultas/utec/2026-06-20/abc.json?X-Amz-...",
+  "key": "consultas/utec/2026-06-20/abc123.json"
 }
 ```
+
+Prefijos resultantes:
+- `tipo=consultas`  → `consultas/{tenant}/...` → dispara `fanOut` (triage)
+- `tipo=documentos` → `corpus/{tenant}/...`    → dispara `ragIngest` (corpus del RAG)
 
 **Cómo usar la URL (PUT directo a S3):**
 ```
@@ -153,7 +160,7 @@ Detalle completo de una consulta.
 
 ---
 
-## Formato del JSON de consultas (para subir a S3)
+## Formato del JSON de consultas (tipo=consultas, para subir a S3)
 
 ```json
 {
@@ -168,6 +175,27 @@ Detalle completo de una consulta.
   ]
 }
 ```
+
+## Formato del JSON de corpus (tipo=documentos, para subir a S3)
+
+Para alimentar el RAG de un tenant en caliente. Tras el PUT, `ragIngest` reenvía
+cada documento a `POST {RAG_URL}/documentos`.
+
+```json
+{
+  "tenantId": "utec",
+  "documentos": [
+    {
+      "fuente": "calendario_2026.txt",
+      "texto": "El semestre 2026-1 inicia el 10 de marzo. Las matrículas..."
+    }
+  ]
+}
+```
+
+- `fuente`: nombre/identificador del documento. Re-subir la misma `fuente` actualiza
+  (idempotente por tenantId+fuente+chunk), no duplica.
+- `texto`: contenido en texto libre; el RAG lo chunkea y embebe.
 
 - `id`: identificador único de la consulta (string). Si se omite, el sistema genera uno aleatorio.
 - `texto`: el mensaje en texto libre (requerido). Si es vacío o null, el mensaje queda en estado `fallido`.
