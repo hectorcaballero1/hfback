@@ -1,0 +1,25 @@
+{
+  "tenantId": "utec",
+  "consultas": [
+    {
+      "texto": "¿Cuánto cuesta la constancia de estudios y en cuántos días la entregan?",
+      "remitente": "diego.ramos@utec.edu.pe"
+    },
+    {
+      "texto": "¿Cuántos días tengo para apelar la nota de un examen?",
+      "remitente": "valeria.castro@utec.edu.pe"
+    },
+    {
+      "texto": "Mi pago de pensión no aparece registrado en el sistema desde hace una semana y me figura como deudor.",
+      "remitente": "carlos.huaman@utec.edu.pe"
+    },
+    {
+      "texto": "Estoy pasando por una situación personal difícil y necesito hablar con alguien de bienestar estudiantil.",
+      "remitente": "lorena.quispe@utec.edu.pe"
+    },
+    {
+      "texto": "GANA DINERO RAPIDO trabajando desde casa, escribe ya mismo a este numero!!!",
+      "remitente": "promos@spam-ofertas.com"
+    }
+  ]
+}

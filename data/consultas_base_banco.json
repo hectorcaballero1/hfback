@@ -1,0 +1,25 @@
+{
+  "tenantId": "banco",
+  "consultas": [
+    {
+      "texto": "¿Cómo bloqueo mi tarjeta si me la robaron?",
+      "remitente": "lucia.perez@gmail.com"
+    },
+    {
+      "texto": "¿Qué documentos necesito para abrir una cuenta de ahorros?",
+      "remitente": "martin.quispe@gmail.com"
+    },
+    {
+      "texto": "Hay un cargo de 850 soles en mi tarjeta de crédito que no reconozco, quiero reportarlo como fraude.",
+      "remitente": "diana.castro@gmail.com"
+    },
+    {
+      "texto": "Solicité un préstamo personal hace una semana y todavía no sé en qué estado está mi solicitud.",
+      "remitente": "alberto.rios@gmail.com"
+    },
+    {
+      "texto": "Felicidades, has sido seleccionado para un premio. Ingresa tus datos en http://premio.fake-link.net",
+      "remitente": "premios@phishing.net"
+    }
+  ]
+}

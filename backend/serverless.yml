@@ -148,6 +148,40 @@ resources:
         QueueName: hack-utec-dlq-${sls:stage}
         MessageRetentionPeriod: 86400
 
+    # ---------- Alarma de la DLQ ----------
+    # Notifica por correo (SNS) apenas cae 1 mensaje a la DLQ = hubo un fallo de sistema.
+
+    DLQAlarmTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: hack-utec-dlq-alarm-${sls:stage}
+
+    DLQAlarmSubscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+        TopicArn: { Ref: DLQAlarmTopic }
+        Protocol: email
+        Endpoint: ${env:ALARM_EMAIL}
+
+    DLQAlarm:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmName: hack-utec-dlq-no-vacia-${sls:stage}
+        AlarmDescription: "Hay mensajes en la DLQ: una consulta falló tras agotar reintentos. Revisar causa (Groq, RAG, bug) y hacer redrive."
+        Namespace: AWS/SQS
+        MetricName: ApproximateNumberOfMessagesVisible
+        Dimensions:
+          - Name: QueueName
+            Value: hack-utec-dlq-${sls:stage}
+        Statistic: Maximum
+        Period: 300
+        EvaluationPeriods: 1
+        Threshold: 1
+        ComparisonOperator: GreaterThanOrEqualToThreshold
+        TreatMissingData: notBreaching
+        AlarmActions:
+          - { Ref: DLQAlarmTopic }
+
     TriageQueue:
       Type: AWS::SQS::Queue
       Properties:

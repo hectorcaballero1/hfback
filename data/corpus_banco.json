@@ -2,20 +2,12 @@
   "tenantId": "banco",
   "documentos": [
     {
-      "fuente": "horarios_agencias.txt",
-      "texto": "Las agencias del Banco Nacional atienden de lunes a viernes de 9:00 a 18:00 y sábados de 9:00 a 13:00. Las agencias ubicadas en centros comerciales atienden todos los días de 10:00 a 21:00. Los cajeros automáticos están disponibles las 24 horas. La banca por internet y la app móvil operan sin interrupción, salvo mantenimientos programados los domingos de 2:00 a 4:00."
+      "fuente": "reposicion_tarjetas.txt",
+      "texto": "La reposición de una tarjeta por pérdida, robo o deterioro tiene un costo único de 20 soles, y es el mismo monto tanto para tarjetas de débito como de crédito. La tarjeta de reemplazo se entrega en el domicilio registrado en un plazo de 5 días hábiles. El bloqueo de la tarjeta anterior es gratuito e inmediato."
     },
     {
-      "fuente": "app_movil.txt",
-      "texto": "La app móvil del Banco Nacional permite transferencias inmediatas hasta 10000 soles diarios, pago de servicios y bloqueo de tarjetas. Para activar la app se necesita el número de tarjeta y el DNI. El límite de transferencia se puede aumentar hasta 50000 soles validando la identidad con reconocimiento facial. Si olvidaste tu clave digital, podés recuperarla desde la opción Olvidé mi clave con un código enviado a tu correo registrado."
-    },
-    {
-      "fuente": "seguros.txt",
-      "texto": "El Banco Nacional ofrece seguro de desgravamen obligatorio para todos los créditos, que cancela la deuda en caso de fallecimiento del titular. El seguro vehicular cubre robo, choque y responsabilidad civil con primas desde 80 soles mensuales. El seguro de tarjetas protege contra consumos fraudulentos reportados dentro de las 48 horas. La contratación se hace en agencia o por la banca por internet."
-    },
-    {
-      "fuente": "creditos_personales.txt",
-      "texto": "El crédito personal del Banco Nacional ofrece montos desde 1000 hasta 80000 soles, con plazos de 6 a 60 meses. La tasa de interés efectiva anual va del 18% al 32% según el perfil crediticio del cliente. La aprobación demora hasta 48 horas hábiles. Se requiere ser mayor de edad, tener ingresos demostrables y no figurar en centrales de riesgo con calificación deficiente."
+      "fuente": "horario_app.txt",
+      "texto": "La aplicación móvil del Banco Nacional está disponible las 24 horas, todos los días. El único periodo de mantenimiento programado es los domingos de 2:00 a 4:00 de la madrugada, durante el cual algunas operaciones pueden no estar disponibles."
     }
   ]
 }

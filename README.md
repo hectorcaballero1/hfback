@@ -45,6 +45,7 @@ cd backend && cp .env.example .env
 | `GROQ_API_KEY` | LLM — [console.groq.com](https://console.groq.com) |
 | `RAG_URL` | IP pública de la EC2 del RAG (ej. `http://1.2.3.4:8000`) |
 | `RESEND_API_KEY` | correos (opcional) — [resend.com](https://resend.com) |
+| `ALARM_EMAIL` | correo que recibe la alarma cuando la DLQ tiene mensajes |
 
 ### 1. EC2 del RAG (CloudFormation)
 
@@ -119,9 +120,14 @@ JSON de **corpus** (`tipo=documentos` → ingesta al RAG, en caliente):
 ## Stack técnico
 
 - **Backend:** Serverless Framework v4, Python 3.12, AWS Lambda
-- **Mensajería:** S3, EventBridge, SQS (con DLQ)
+- **Mensajería:** S3, EventBridge, SQS (con DLQ + alarma CloudWatch/SNS)
 - **Base de datos:** DynamoDB (tabla única, GSI por estado)
-- **LLM:** Groq (llama-3.3-70b-versatile)
+- **LLM:** Groq (llama-3.1-8b-instant)
 - **RAG:** Qdrant + sentence-transformers all-MiniLM-L6-v2 (local, sin API externa)
 - **Email:** Resend (notificación de respuestas)
 - **Infra:** AWS Academy Learner Lab con LabRole
+
+## Testeo
+
+Flujo de prueba end-to-end (consultas base → corpus en caliente → consulta estrella RAG)
+y cómo forzar la DLQ para demostrar la alarma: ver [docs/testeo.md](docs/testeo.md).

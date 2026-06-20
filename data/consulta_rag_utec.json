@@ -1,0 +1,9 @@
+{
+  "tenantId": "utec",
+  "consultas": [
+    {
+      "texto": "Hola, me preguntaba cuál es el costo del examen de rezagados y si es el mismo para todos los cursos.",
+      "remitente": "estudiante@utec.edu.pe"
+    }
+  ]
+}

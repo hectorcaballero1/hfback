@@ -114,3 +114,17 @@ en DynamoDB. Solo `respondido_rag` y `enrutado` notifican; `no_aplica` y `fallid
 - **Input inválido** (texto vacío/null): detectado al inicio, `estado=fallido`, SQS elimina el mensaje. Sin reintento.
 - **Error de sistema** (429, 401, 500, timeout, red): raise exception → SQS reintenta → DLQ tras 5 intentos.
 - La DLQ en el flujo normal permanece vacía.
+
+### Alarma de la DLQ (observabilidad)
+Una CloudWatch Alarm vigila la métrica `ApproximateNumberOfMessagesVisible` de la DLQ
+con umbral ≥ 1: apenas cae un mensaje, pasa a `ALARM` y notifica por correo vía SNS.
+Dispara **una vez por incidente** (en la transición OK→ALARM), no por cada mensaje, así
+que no genera spam. Como el LLM es de pago por request y el clasificador es confiable,
+un mensaje en la DLQ siempre significa un fallo de sistema que el responsable debe
+investigar y reprocesar (redrive), no una consulta inválida.
+
+### ¿Por qué llama-3.1-8b-instant?
+El free tier de Groq limita los tokens por día **por modelo** (100k en el 70b). El 8b
+tiene un pool propio y más holgado, y consume menos tokens por consulta. Para la demo
+prioriza disponibilidad sobre la calidad marginal del 70b; el modelo se cambia en una
+constante de `worker.py` sin tocar el resto.

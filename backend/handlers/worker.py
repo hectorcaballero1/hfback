@@ -15,7 +15,7 @@ RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
 EMAIL_FROM = os.environ.get('EMAIL_FROM', 'onboarding@resend.dev')
 
 GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
-GROQ_MODEL = 'llama-3.3-70b-versatile'
+GROQ_MODEL = 'llama-3.1-8b-instant'
 RESEND_URL = 'https://api.resend.com/emails'
 
 # TODO: áreas válidas por tenant — leer de DynamoDB config item

@@ -1,0 +1,9 @@
+{
+  "tenantId": "banco",
+  "consultas": [
+    {
+      "texto": "Buenas, quería saber cuánto cuesta la reposición de mi tarjeta y si es lo mismo para débito y crédito.",
+      "remitente": "cliente@gmail.com"
+    }
+  ]
+}

@@ -2,20 +2,12 @@
   "tenantId": "utec",
   "documentos": [
     {
-      "fuente": "calendario_2026.txt",
-      "texto": "El semestre académico 2026-1 inicia el 10 de marzo de 2026 y finaliza el 18 de julio de 2026. La matrícula regular es del 24 de febrero al 3 de marzo. La matrícula extemporánea va del 4 al 8 de marzo con un recargo del 10%. El receso de medio semestre es del 5 al 9 de mayo. Los exámenes finales se rinden del 13 al 18 de julio de 2026."
+      "fuente": "examenes_rezagados.txt",
+      "texto": "El examen de rezagados tiene un costo de 50 soles y es el mismo monto para todos los cursos, sin excepción. Se rinde durante la semana posterior a los exámenes finales. Para rendirlo, el estudiante debe presentar una justificación válida (médica o laboral) dentro de los 3 días hábiles posteriores a la fecha del examen original."
     },
     {
-      "fuente": "becas_2026.txt",
-      "texto": "UTEC ofrece becas de excelencia académica que cubren entre el 25% y el 100% de la pensión. Para postular se requiere un promedio ponderado mínimo de 16 y estar matriculado en al menos 18 créditos. La convocatoria de becas para el semestre 2026-1 cierra el 28 de febrero de 2026. Los resultados se publican dos semanas después en el portal del estudiante."
-    },
-    {
-      "fuente": "biblioteca.txt",
-      "texto": "La biblioteca central de UTEC atiende de lunes a viernes de 7:00 a 22:00 y sábados de 8:00 a 18:00. El préstamo de libros a domicilio es por 7 días, renovable hasta 2 veces. La multa por devolución tardía es de 2 soles por día por libro. Los cubículos de estudio grupal se reservan desde el portal con un máximo de 3 horas por grupo."
-    },
-    {
-      "fuente": "constancias.txt",
-      "texto": "La constancia de estudios se solicita desde el portal del estudiante en la sección Trámites. Tiene un costo de 15 soles y se emite en un plazo de 3 días hábiles. La constancia de egresado y el certificado de estudios completo requieren no tener deudas pendientes con la universidad y se entregan en 5 días hábiles."
+      "fuente": "estacionamiento.txt",
+      "texto": "El uso del estacionamiento del campus para estudiantes tiene un costo de 80 soles por semestre para autos y 30 soles por semestre para motos. El pase se solicita en la Oficina de Servicios Generales presentando la tarjeta de propiedad del vehículo."
     }
   ]
 }
