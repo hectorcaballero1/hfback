@@ -14,7 +14,7 @@ provider:
   environment:
     TABLE_NAME: { Ref: TriageTable }
     QUEUE_URL: { Ref: TriageQueue }
-    BUCKET_NAME: { Ref: UploadsBucket }
+    BUCKET_NAME: hack-utec-uploads-${sls:stage}-${env:ACCOUNT_ID}
     EVENT_BUS_NAME: { Ref: TriageBus }
     GROQ_API_KEY: ${env:GROQ_API_KEY}
     RAG_URL: ${env:RAG_URL, ''}
