@@ -30,12 +30,39 @@ Subir corpus para el RAG usa el mismo S3 con otro prefijo (`corpus/`), que dispa
 
 ## Deploy
 
-### 0. `.env`
+Todo corre en una sola EC2 (la del RAG): ahí se levanta el RAG con Docker y desde ahí
+mismo se hace el `serverless deploy` del backend.
 
-Copiar el ejemplo y completar (vive en `backend/`, junto al `serverless.yml`):
+### 1. Crear la EC2 con CloudFormation
+
+Subir `rag/cloudformation-ec2.yaml` a la consola de CloudFormation y crear el stack
+(usa la **VPC default**, no pide parámetros). Cuando llegue a `CREATE_COMPLETE`, copiar
+el output `RagPublicIP` y hacer SSH a la máquina.
+
+### 2. Dentro de la EC2: credenciales, Serverless y RAG
 
 ```bash
-cd backend && cp .env.example .env
+# a. Credenciales del Learner Lab (expiran cada sesión)
+#    → pegar en ~/.aws/credentials desde AWS Details → AWS CLI
+
+# b. Serverless v4 (el AMI no lo trae; v4 requiere org)
+sudo npm install -g serverless@4
+serverless login
+
+# c. Levantar el RAG con Docker
+cd ~/hfback/rag
+docker compose up -d qdrant retrieval
+docker compose run seeder          # siembra el corpus base
+curl http://localhost:8000/health  # verificar
+```
+
+### 3. Configurar `.env` y desplegar el backend
+
+El `.env` vive en `backend/`, junto al `serverless.yml` (Serverless lo lee solo):
+
+```bash
+cd ~/hfback/backend
+cp .env.example .env      # completar (ver tabla abajo)
 ```
 
 | Variable | Para qué |
@@ -43,44 +70,19 @@ cd backend && cp .env.example .env
 | `SLS_ORG` | tu org de [app.serverless.com](https://app.serverless.com) |
 | `ACCOUNT_ID` | AWS Account ID del Learner Lab |
 | `GROQ_API_KEY` | LLM — [console.groq.com](https://console.groq.com) |
-| `RAG_URL` | IP pública de la EC2 del RAG (ej. `http://1.2.3.4:8000`) |
+| `RAG_URL` | IP **pública** de esta EC2 (ej. `http://1.2.3.4:8000`) — la Lambda llama por internet, no `localhost` |
+| `ALARM_EMAIL` | correo que recibe la alarma de la DLQ (obligatorio, sin default) |
 | `RESEND_API_KEY` | correos (opcional) — [resend.com](https://resend.com) |
-| `ALARM_EMAIL` | correo que recibe la alarma cuando la DLQ tiene mensajes |
-
-### 1. EC2 del RAG (CloudFormation)
-
-Crear el stack `rag/cloudformation-ec2.yaml` en la consola de CloudFormation (usa la **VPC default**, no pide parámetros). Cuando llegue a `CREATE_COMPLETE`, copiar el output `RagPublicIP` → va en `RAG_URL`.
-
-SSH a la EC2 y dentro levantar el RAG:
 
 ```bash
-cd rag
-docker compose up -d qdrant retrieval
-docker compose run seeder          # siembra el corpus base
-curl http://localhost:8000/health  # verificar
-```
-
-### 2. Backend (serverless)
-
-En la EC2 de desarrollo:
-
-```bash
-# Actualizar credentials del Learner Lab (expiran cada sesión)
-# → pegar en ~/.aws/credentials desde AWS Details → AWS CLI
-
-# Instalar Serverless y loguearse (v4 requiere org)
-sudo npm install -g serverless@4
-serverless login
-
-# Empaquetar dependencias de Python y desplegar
-cd backend
 pip install -r requirements.txt -t .   # IMPRESCINDIBLE: si falta, el worker crashea con "No module named 'requests'"
 serverless deploy
 ```
 
-Guardar la `ApiGatewayUrl` del output — va en el `.env` del frontend (`VITE_API_URL`).
+Tras el deploy: confirmar la **suscripción SNS** (llega un correo de AWS a `ALARM_EMAIL`)
+y guardar la `ApiGatewayUrl` del output — va en el `.env` del frontend (`VITE_API_URL`).
 
-### 3. Inicializar tenants (DynamoDB)
+### 4. Inicializar tenants (DynamoDB)
 
 ```bash
 python seed_tenants.py    # lee data/tenants.json; idempotente
