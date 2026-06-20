@@ -24,11 +24,6 @@ functions:
   fanOut:
     handler: handlers/fanout.handler
     timeout: 30
-    events:
-      - s3:
-          bucket: { Ref: UploadsBucket }
-          event: s3:ObjectCreated:*
-          existing: true
     environment:
       EVENT_BUS_NAME: { Ref: TriageBus }
 
@@ -89,8 +84,17 @@ functions:
 
 resources:
   Resources:
+    FanOutS3Permission:
+      Type: AWS::Lambda::Permission
+      Properties:
+        FunctionName: { Fn::GetAtt: [FanOutLambdaFunction, Arn] }
+        Action: lambda:InvokeFunction
+        Principal: s3.amazonaws.com
+        SourceArn: { Fn::Sub: "arn:aws:s3:::hack-utec-uploads-${sls:stage}-${env:ACCOUNT_ID}" }
+
     UploadsBucket:
       Type: AWS::S3::Bucket
+      DependsOn: FanOutS3Permission
       Properties:
         BucketName: hack-utec-uploads-${sls:stage}-${env:ACCOUNT_ID}
         CorsConfiguration:
@@ -98,6 +102,10 @@ resources:
             - AllowedMethods: [PUT, GET]
               AllowedOrigins: ['*']
               AllowedHeaders: ['*']
+        NotificationConfiguration:
+          LambdaConfigurations:
+            - Event: s3:ObjectCreated:*
+              Function: { Fn::GetAtt: [FanOutLambdaFunction, Arn] }
 
     TriageBus:
       Type: AWS::Events::EventBus
