@@ -28,6 +28,7 @@ functions:
       - s3:
           bucket: { Ref: UploadsBucket }
           event: s3:ObjectCreated:*
+          existing: true
     environment:
       EVENT_BUS_NAME: { Ref: TriageBus }
 
