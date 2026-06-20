@@ -22,7 +22,7 @@ Seleccioná el tenant en el header antes de cada subida. Los JSON van en `data/`
 
 ### Paso 1 — Consultas base (muestra los 3 veredictos)
 
-Subí `consultas_base_<tenant>.json` (modo **Consultas**). Son 5 consultas **sin `id`**
+Subí `consultas_<tenant>_5.json` (modo **Consultas**). Son 5 consultas **sin `id`**
 (el backend genera el UUID solo). Andá a **En vivo** y mirá cómo se procesan:
 
 | | UTEC | Banco |
@@ -61,7 +61,7 @@ a ese correo; el resto los rechaza sin romper nada.
 
 ## Carga masiva (opcional, para llenar el dashboard)
 
-`consultas_test_<tenant>.json` tiene 50 consultas cada uno (con mezcla de veredictos y
+`consultas_<tenant>_50.json` tiene 50 consultas cada uno (con mezcla de veredictos y
 casos cruzados banco↔utec que caen en `no_aplica`). Útil para que "En vivo" y los
 contadores se vean cargados. Ojo con la cuota de Groq si lo corrés varias veces.
 
