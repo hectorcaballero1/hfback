@@ -1,0 +1,12 @@
+[
+  {
+    "tenantId": "utec",
+    "nombre": "UTEC",
+    "areas": ["admisiones", "registro_academico", "tesoreria", "bienestar", "sistemas"]
+  },
+  {
+    "tenantId": "banco",
+    "nombre": "Banco Nacional",
+    "areas": ["atencion_cliente", "creditos", "operaciones", "fraudes", "inversiones"]
+  }
+]

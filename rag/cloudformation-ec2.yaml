@@ -10,12 +10,6 @@ Parameters:
     Type: AWS::EC2::KeyPair::KeyName
     Default: "vockey"
     Description: "KeyPair para acceso SSH"
-  VpcId:
-    Type: AWS::EC2::VPC::Id
-    Description: "VPC donde desplegar (Learner Lab: usar la VPC default)"
-  PublicSubnet1:
-    Type: AWS::EC2::Subnet::Id
-    Description: "Subnet publica con MapPublicIpOnLaunch=true (Learner Lab: cualquier subnet default)"
 
 Resources:
 
@@ -25,7 +19,6 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: "RAG Server: SSH 22, FastAPI 8000, Qdrant 6333"
-      VpcId: !Ref VpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22
@@ -54,7 +47,6 @@ Resources:
       IamInstanceProfile: "LabInstanceProfile"
       SecurityGroupIds:
         - !Ref RagSecurityGroup
-      SubnetId: !Ref PublicSubnet1
       BlockDeviceMappings:
         - DeviceName: /dev/sda1
           Ebs:
@@ -76,8 +68,8 @@ Outputs:
     Description: "IP privada"
     Value: !GetAtt RagServer.PrivateIp
   RagVpcId:
-    Description: "VPC donde quedo desplegada la instancia"
-    Value: !Ref VpcId
-  RagSubnetId:
-    Description: "Subnet donde quedo desplegada la instancia"
-    Value: !Ref PublicSubnet1
+    Description: "VPC donde quedo desplegada la instancia (default VPC)"
+    Value: !GetAtt RagSecurityGroup.VpcId
+  RagAvailabilityZone:
+    Description: "Zona de disponibilidad de la instancia"
+    Value: !GetAtt RagServer.AvailabilityZone
