@@ -1,5 +1,6 @@
 service: hack-utec-triage
 frameworkVersion: '4'
+org: ${env:SLS_ORG}
 
 useDotenv: true
 

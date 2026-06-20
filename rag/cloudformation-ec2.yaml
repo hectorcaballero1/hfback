@@ -12,10 +12,10 @@ Parameters:
     Description: "KeyPair para acceso SSH"
   VpcId:
     Type: AWS::EC2::VPC::Id
-    Description: "VPC donde desplegar los recursos"
+    Description: "VPC donde desplegar (Learner Lab: usar la VPC default)"
   PublicSubnet1:
     Type: AWS::EC2::Subnet::Id
-    Description: "Subnet publica"
+    Description: "Subnet publica con MapPublicIpOnLaunch=true (Learner Lab: cualquier subnet default)"
 
 Resources:
 
@@ -75,3 +75,9 @@ Outputs:
   RagPrivateIP:
     Description: "IP privada"
     Value: !GetAtt RagServer.PrivateIp
+  RagVpcId:
+    Description: "VPC donde quedo desplegada la instancia"
+    Value: !Ref VpcId
+  RagSubnetId:
+    Description: "Subnet donde quedo desplegada la instancia"
+    Value: !Ref PublicSubnet1
