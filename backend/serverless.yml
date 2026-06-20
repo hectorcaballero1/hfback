@@ -19,6 +19,8 @@ provider:
     GROQ_API_KEY: ${env:GROQ_API_KEY}
     RAG_URL: ${env:RAG_URL, ''}
     GEMINI_API_KEY: ${env:GEMINI_API_KEY, ''}
+    RESEND_API_KEY: ${env:RESEND_API_KEY, ''}
+    EMAIL_FROM: ${env:EMAIL_FROM, 'onboarding@resend.dev'}
 
 functions:
   fanOut:

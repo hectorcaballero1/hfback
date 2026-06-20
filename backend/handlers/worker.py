@@ -11,9 +11,12 @@ TABLE_NAME = os.environ['TABLE_NAME']
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
 RAG_URL = os.environ.get('RAG_URL', '')
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
+EMAIL_FROM = os.environ.get('EMAIL_FROM', 'onboarding@resend.dev')
 
 GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
 GROQ_MODEL = 'llama-3.3-70b-versatile'
+RESEND_URL = 'https://api.resend.com/emails'
 
 # TODO: áreas válidas por tenant — leer de DynamoDB config item
 TENANT_CONFIG = {
@@ -51,6 +54,30 @@ def _put_estado(table, tenant_id, consulta_id, estado, extra=None):
         attrs.update(extra)
 
     table.put_item(Item=attrs)
+
+
+def _enviar_email(destinatario, asunto, html):
+    """Notificación fire-and-forget vía Resend.
+
+    El sandbox de Resend solo acepta envíos al correo de la cuenta; cualquier otro
+    destinatario es RECHAZADO (no ignorado). Por eso esto nunca lanza: loguea el
+    rechazo/error y deja que el procesamiento siga. La consulta ya quedó en Dynamo.
+    """
+    if not RESEND_API_KEY or not destinatario:
+        return
+    try:
+        resp = requests.post(
+            RESEND_URL,
+            headers={'Authorization': f'Bearer {RESEND_API_KEY}'},
+            json={'from': EMAIL_FROM, 'to': [destinatario], 'subject': asunto, 'html': html},
+            timeout=8,
+        )
+        if resp.status_code >= 400:
+            print(f"[worker] Email rechazado para {destinatario}: {resp.status_code} {resp.text}")
+        else:
+            print(f"[worker] Email enviado a {destinatario}")
+    except Exception as e:
+        print(f"[worker] Error enviando email a {destinatario}: {e}")
 
 
 def _call_groq(messages, timeout=25):
@@ -216,6 +243,25 @@ def handler(event, context):
 
             _put_estado(table, tenant_id, consulta_id, 'resuelto', extra)
             print(f"[worker] Resuelto: {tenant_id}#{consulta_id} → {veredicto}")
+
+            # Notificación por correo (fire-and-forget; nunca rompe el procesamiento)
+            if veredicto == 'respondido_rag':
+                _enviar_email(
+                    remitente,
+                    'Respuesta a tu consulta',
+                    f"<p>Hola,</p><p>Recibimos tu consulta:</p>"
+                    f"<blockquote>{texto}</blockquote>"
+                    f"<p><strong>Respuesta:</strong></p><p>{extra.get('respuesta', '')}</p>"
+                    f"<p style='color:#6b6b6b;font-size:12px'>Fuente: {extra.get('fuente', '')}</p>",
+                )
+            elif veredicto == 'enrutado':
+                _enviar_email(
+                    remitente,
+                    'Tu consulta fue derivada',
+                    f"<p>Hola,</p><p>Tu consulta fue derivada al área "
+                    f"<strong>{extra.get('area', '')}</strong> y será atendida por un especialista.</p>"
+                    f"<blockquote>{texto}</blockquote>",
+                )
 
         except Exception as e:
             # Error de SISTEMA: reportar falla para que SQS reintente este mensaje

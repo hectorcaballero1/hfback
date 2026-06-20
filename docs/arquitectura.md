@@ -71,6 +71,12 @@
              ┌───────────────┐
              │   DynamoDB    │  PK: tenantId#consultaId
              │ (TriageTable) │  GSI: por-estado (tenantId#estado)
+             └───────┬───────┘
+                     │ respondido_rag / enrutado
+                     ▼
+             ┌───────────────┐
+             │    Resend     │  Correo al remitente (fire-and-forget)
+             │  (API email)  │  respuesta RAG / acuse de enrutado
              └───────────────┘
 ```
 
@@ -89,6 +95,14 @@ Los modelos de embedding (sentence-transformers all-MiniLM-L6-v2, ~90MB) y Qdran
 - Sin costo adicional ni dependencia de API key para el retrieval.
 - Consistencia garantizada entre poblar (seeder) y consultar (retrieval): mismo modelo exacto.
 - Funciona offline una vez que el modelo está en el contenedor.
+
+### ¿Por qué Resend y no SES para los correos?
+En el Learner Lab, SES suele estar en sandbox y el `LabRole` no garantiza permiso
+`ses:SendEmail`. Resend es una API externa (mismo patrón que Groq: key en `.env`),
+sin dependencia de permisos AWS. El envío es **fire-and-forget**: si Resend rechaza
+el destinatario (típico en sandbox, solo acepta el correo de la cuenta), se loguea y
+el worker sigue. El correo nunca bloquea el procesamiento; la consulta siempre queda
+en DynamoDB. Solo `respondido_rag` y `enrutado` notifican; `no_aplica` y `fallido` no.
 
 ### Política de errores del worker
 - **Input inválido** (texto vacío/null): detectado al inicio, `estado=fallido`, SQS elimina el mensaje. Sin reintento.

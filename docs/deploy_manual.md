@@ -63,7 +63,16 @@ SLS_ORG=           # nombre de tu org en app.serverless.com
 ACCOUNT_ID=        # AWS Details del Learner Lab
 GROQ_API_KEY=      # console.groq.com
 RAG_URL=http://IP_PUBLICA_EC2_RAG:8000
+RESEND_API_KEY=    # resend.com — notificación por correo (opcional)
 ```
+
+> **Correo (Resend):** los veredictos `respondido_rag` y `enrutado` envían un correo
+> al `remitente` de la consulta. En sandbox (sin dominio propio) Resend **solo** acepta
+> envíos a tu correo de la cuenta Resend; cualquier otro destinatario lo rechaza, pero
+> el envío es fire-and-forget: se loguea y el procesamiento sigue (la consulta igual
+> queda en DynamoDB). Para la demo, poné **tu** correo de Resend como `remitente` en las
+> consultas que quieras que disparen email. Si dejás `RESEND_API_KEY` vacío, no se
+> envía nada y todo sigue funcionando.
 
 ## 3. Deploy serverless
 
@@ -73,12 +82,18 @@ Si es la primera vez en esta EC2, instalar Serverless:
 sudo npm install -g serverless@4
 ```
 
-Luego desplegar:
+Luego empaquetar las dependencias de Python y desplegar:
 
 ```bash
 cd backend
+pip install -r requirements.txt -t .   # instala requests en el dir → se sube con el deploy
 serverless deploy --stage dev
 ```
+
+> **Importante:** Serverless v4 NO empaqueta el `requirements.txt` de Python solo.
+> El `pip install -t .` deja las librerías en el directorio para que el worker las
+> encuentre en runtime. Si lo olvidás, el worker crashea con
+> `No module named 'requests'` y las consultas nunca se procesan (quedan en la DLQ).
 
 Guardar la `ApiGatewayUrl` del output — va en el frontend.
 
