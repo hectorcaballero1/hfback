@@ -1,0 +1,77 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "EC2 con Qdrant + FastAPI retrieval (RAG) en Docker - HACK//UTEC"
+
+Parameters:
+  AMI:
+    Type: String
+    Default: "ami-08d434e92c0cfa0c0"
+    Description: "ID de AMI (Ubuntu con Docker preinstalado)"
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: "vockey"
+    Description: "KeyPair para acceso SSH"
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: "VPC donde desplegar los recursos"
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet::Id
+    Description: "Subnet publica"
+
+Resources:
+
+  # ---------- Security Group ----------
+
+  RagSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "RAG Server: SSH 22, FastAPI 8000, Qdrant 6333"
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: "0.0.0.0/0"
+        - IpProtocol: tcp
+          FromPort: 8000
+          ToPort: 8000
+          CidrIp: "0.0.0.0/0"
+        - IpProtocol: tcp
+          FromPort: 6333
+          ToPort: 6333
+          CidrIp: "0.0.0.0/0"
+
+  # ---------- EC2 Instance ----------
+
+  RagServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      Tags:
+        - Key: Name
+          Value: "hackutec-rag"
+      ImageId: !Ref AMI
+      InstanceType: t3.medium
+      KeyName: !Ref KeyName
+      IamInstanceProfile: "LabInstanceProfile"
+      SecurityGroupIds:
+        - !Ref RagSecurityGroup
+      SubnetId: !Ref PublicSubnet1
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: "30"
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          apt-get update -y
+          apt-get install -y docker.io docker-compose-plugin git
+          systemctl start docker
+          systemctl enable docker
+          usermod -aG docker ubuntu
+
+Outputs:
+  RagPublicIP:
+    Description: "IP publica - usar en RAG_URL de las Lambdas (http://IP:8000)"
+    Value: !GetAtt RagServer.PublicIp
+  RagPrivateIP:
+    Description: "IP privada"
+    Value: !GetAtt RagServer.PrivateIp

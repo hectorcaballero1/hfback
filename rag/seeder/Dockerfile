@@ -1,0 +1,13 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Pre-descargar el modelo (consistencia con el servicio de retrieval)
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
+
+COPY seed.py .
+
+CMD ["python", "seed.py"]

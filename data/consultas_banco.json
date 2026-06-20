@@ -1,0 +1,53 @@
+{
+  "tenantId": "banco",
+  "consultas": [
+    {
+      "id": "b-001",
+      "texto": "¿Qué documentos necesito para abrir una cuenta de ahorros en el banco?",
+      "remitente": "cliente1@email.com",
+      "timestamp": "2026-06-20T10:10:00Z"
+    },
+    {
+      "id": "b-002",
+      "texto": "Me cobraron una comisión de S/ 45 que no reconozco en mi tarjeta de crédito del mes pasado",
+      "remitente": "cliente2@email.com",
+      "timestamp": "2026-06-20T10:11:00Z"
+    },
+    {
+      "id": "b-003",
+      "texto": "¿Cuál es la tasa de interés anual para préstamos personales de hasta 20,000 soles?",
+      "remitente": "cliente3@email.com",
+      "timestamp": "2026-06-20T10:12:00Z"
+    },
+    {
+      "id": "b-004",
+      "texto": "Hola cómo están, solo estaba probando si el formulario funcionaba bien",
+      "remitente": "test@test.com",
+      "timestamp": "2026-06-20T10:13:00Z"
+    },
+    {
+      "id": "b-005",
+      "texto": "Quiero reportar que me clonaron la tarjeta y ya vi cargos que no hice, es urgente bloquearla",
+      "remitente": "victima@email.com",
+      "timestamp": "2026-06-20T10:14:00Z"
+    },
+    {
+      "id": "b-006",
+      "texto": "¿Cuánto tiempo demora normalmente una transferencia internacional a Estados Unidos?",
+      "remitente": "cliente4@email.com",
+      "timestamp": "2026-06-20T10:15:00Z"
+    },
+    {
+      "id": "b-007",
+      "texto": "Necesito hablar con un asesor especializado sobre las condiciones de mi crédito hipotecario porque quiero refinanciarlo",
+      "remitente": "cliente5@email.com",
+      "timestamp": "2026-06-20T10:16:00Z"
+    },
+    {
+      "id": "b-008",
+      "texto": "GANA DINERO FÁCIL DESDE CASA INVERSIÓN MÍNIMA WHATSAPP 999-999-999 100% SEGURO",
+      "remitente": "spam2@spam.com",
+      "timestamp": "2026-06-20T10:17:00Z"
+    }
+  ]
+}

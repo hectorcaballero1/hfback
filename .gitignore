@@ -1,0 +1,6 @@
+.env
+.serverless/
+__pycache__/
+*.pyc
+node_modules/
+rag/qdrant_storage/

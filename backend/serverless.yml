@@ -1,0 +1,192 @@
+service: hack-utec-triage
+frameworkVersion: '4'
+
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: python3.12
+  region: us-east-1
+  stage: ${opt:stage, 'dev'}
+  iam:
+    role: arn:aws:iam::${env:ACCOUNT_ID}:role/LabRole
+  environment:
+    TABLE_NAME: { Ref: TriageTable }
+    QUEUE_URL: { Ref: TriageQueue }
+    BUCKET_NAME: { Ref: UploadsBucket }
+    EVENT_BUS_NAME: { Ref: TriageBus }
+    GROQ_API_KEY: ${env:GROQ_API_KEY}
+    RAG_URL: ${env:RAG_URL, ''}
+    GEMINI_API_KEY: ${env:GEMINI_API_KEY, ''}
+
+functions:
+  fanOut:
+    handler: handlers/fanout.handler
+    timeout: 30
+    events:
+      - s3:
+          bucket: { Ref: UploadsBucket }
+          event: s3:ObjectCreated:*
+    environment:
+      EVENT_BUS_NAME: { Ref: TriageBus }
+
+  worker:
+    handler: handlers/worker.handler
+    reservedConcurrency: 1
+    timeout: 60
+    events:
+      - sqs:
+          arn: { Fn::GetAtt: [TriageQueue, Arn] }
+          batchSize: 1
+          functionResponseType: ReportBatchItemFailures
+
+  presign:
+    handler: handlers/presign.handler
+    timeout: 10
+    events:
+      - http:
+          path: /uploads/presign
+          method: post
+          cors: true
+
+  stats:
+    handler: handlers/stats.handler
+    timeout: 10
+    events:
+      - http:
+          path: /stats
+          method: get
+          cors: true
+
+  consultasList:
+    handler: handlers/consultas.list_handler
+    timeout: 10
+    events:
+      - http:
+          path: /consultas
+          method: get
+          cors: true
+
+  consultasGet:
+    handler: handlers/consultas.get_handler
+    timeout: 10
+    events:
+      - http:
+          path: /consultas/{id}
+          method: get
+          cors: true
+
+  tenantsList:
+    handler: handlers/tenants.handler
+    timeout: 10
+    events:
+      - http:
+          path: /tenants
+          method: get
+          cors: true
+
+resources:
+  Resources:
+    UploadsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: hack-utec-uploads-${sls:stage}-${env:ACCOUNT_ID}
+        CorsConfiguration:
+          CorsRules:
+            - AllowedMethods: [PUT, GET]
+              AllowedOrigins: ['*']
+              AllowedHeaders: ['*']
+
+    TriageBus:
+      Type: AWS::Events::EventBus
+      Properties:
+        Name: hack-utec-bus-${sls:stage}
+
+    TriageDLQ:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: hack-utec-dlq-${sls:stage}
+        MessageRetentionPeriod: 86400
+
+    TriageQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: hack-utec-queue-${sls:stage}
+        VisibilityTimeout: 360
+        RedrivePolicy:
+          deadLetterTargetArn: { Fn::GetAtt: [TriageDLQ, Arn] }
+          maxReceiveCount: 5
+
+    TriageRule:
+      Type: AWS::Events::Rule
+      Properties:
+        EventBusName: { Ref: TriageBus }
+        EventPattern:
+          detail-type: ['consulta.recibida']
+        State: ENABLED
+        Targets:
+          - Id: TriageQueueTarget
+            Arn: { Fn::GetAtt: [TriageQueue, Arn] }
+
+    QueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - { Ref: TriageQueue }
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: events.amazonaws.com
+              Action: sqs:SendMessage
+              Resource: { Fn::GetAtt: [TriageQueue, Arn] }
+              Condition:
+                ArnEquals:
+                  aws:SourceArn: { Fn::GetAtt: [TriageRule, Arn] }
+
+    TriageTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: hack-utec-triage-${sls:stage}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: pk
+            AttributeType: S
+          - AttributeName: sk
+            AttributeType: S
+          - AttributeName: gsi1pk
+            AttributeType: S
+          - AttributeName: gsi1sk
+            AttributeType: S
+        KeySchema:
+          - AttributeName: pk
+            KeyType: HASH
+          - AttributeName: sk
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: por-estado
+            KeySchema:
+              - AttributeName: gsi1pk
+                KeyType: HASH
+              - AttributeName: gsi1sk
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+  Outputs:
+    ApiGatewayUrl:
+      Value:
+        Fn::Join:
+          - ''
+          - - 'https://'
+            - { Ref: ApiGatewayRestApi }
+            - '.execute-api.us-east-1.amazonaws.com/${sls:stage}'
+    UploadsBucketName:
+      Value: { Ref: UploadsBucket }
+    TableName:
+      Value: { Ref: TriageTable }
+    QueueUrl:
+      Value: { Ref: TriageQueue }
+    DLQUrl:
+      Value: { Ref: TriageDLQ }
