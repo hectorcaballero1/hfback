@@ -12,7 +12,12 @@ GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
 RAG_URL = os.environ.get('RAG_URL', '')
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
-EMAIL_FROM = os.environ.get('EMAIL_FROM', 'onboarding@resend.dev')
+# `or` y no get(default): si EMAIL_FROM viene como cadena vacía desde el .env,
+# igual cae al remitente de prueba de Resend (si no, Resend da 422 "domain invalid").
+EMAIL_FROM = os.environ.get('EMAIL_FROM') or 'onboarding@resend.dev'
+# Umbral de similitud (cosine 0-1) para aceptar una respuesta del RAG. Por debajo,
+# se considera que no hay respuesta documentada y se degrada a enrutado.
+RAG_SCORE_MIN = 0.3
 
 GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
 GROQ_MODEL = 'llama-3.1-8b-instant'
@@ -150,7 +155,16 @@ def _buscar_rag(texto, tenant_id):
             timeout=8,  # 8s: primera llamada carga el modelo sentence-transformers
         )
         resp.raise_for_status()
-        return resp.json().get('fragmentos', [])
+        fragmentos = resp.json().get('fragmentos', [])
+
+        # Umbral de similitud: si la mejor coincidencia es débil, NO hay respuesta
+        # documentada real. Devolver vacío para que el worker degrade a enrutado en
+        # vez de forzar a Groq a redactar sobre fragmentos irrelevantes.
+        mejor = max((f.get('score', 0) for f in fragmentos), default=0)
+        print(f"[worker] RAG mejor score={mejor:.3f} (umbral {RAG_SCORE_MIN})")
+        if mejor < RAG_SCORE_MIN:
+            return []
+        return [f for f in fragmentos if f.get('score', 0) >= RAG_SCORE_MIN]
     except Exception as e:
         print(f"[worker] RAG no disponible: {e}")
         return None
