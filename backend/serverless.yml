@@ -186,7 +186,9 @@ resources:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: hack-utec-queue-${sls:stage}
-        VisibilityTimeout: 360
+        # 60s = igual al timeout del worker. Reintentos por 429 (TPM de Groq) cada
+        # ~1 min en vez de cada 6, así las tandas grandes drenan más ágil.
+        VisibilityTimeout: 60
         RedrivePolicy:
           deadLetterTargetArn: { Fn::GetAtt: [TriageDLQ, Arn] }
           maxReceiveCount: 5
