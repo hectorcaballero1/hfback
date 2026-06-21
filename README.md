@@ -54,7 +54,7 @@ está escrito en un reglamento.
 
 ## Arquitectura
 
-![Arquitectura del sistema](docs/arquitectura.svg)
+![Arquitectura del sistema](docs/arquitectura.png)
 
 Subir corpus para el RAG usa el mismo S3 con otro prefijo (`corpus/`), que dispara la Lambda `ragIngest`. Decisiones de diseño en [docs/arquitectura.md](docs/arquitectura.md).
 
@@ -97,7 +97,7 @@ existe la alarma. En operación normal, la DLQ debe estar vacía.
 ├── rag/              # Docker Compose — Qdrant + FastAPI retrieval + seeder
 │   └── corpus/       # Documentos base de cada tenant (txt/md)
 ├── data/             # JSON de consultas y corpus para la demo
-└── docs/             # arquitectura.md, testeo.md, arquitectura.svg (diagrama)
+└── docs/             # arquitectura.md, testeo.md, arquitectura.png (diagrama)
 ```
 
 ## Deploy
